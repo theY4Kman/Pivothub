@@ -1,0 +1,148 @@
+<html>
+  <head>
+    <title>PivotHub Settings</title>
+    <script type="text/javascript" charset="utf-8" src="jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="jquery-ui.js"></script>
+    <script type="text/javascript" src="options.js"></script>
+    <style type="text/css" media="screen">
+      body {
+        background-color: #6B6B6B;
+        font-family: sans-serif;
+        margin: 20px;
+      }
+
+      #save_notification {
+        border-radius: 7px;
+        position: absolute;
+        font-size: 0.9em;
+        font-weight: bold;
+        padding: 10px;
+        right: 0;
+      }
+
+      #options {
+        background-color: #f6f6f6;
+        border: 2px solid black;
+        border-radius: 12px;
+        margin: 0 auto;
+        padding: 15px;
+        width: 760px;
+      }
+
+      #input_format {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 5px;
+        width: 100%;
+      }
+
+      .help {
+        color: #333333;
+        font-size: 0.9em;
+      }
+      .help .variable .example {
+        font-style: italic;
+      }
+      .help > .description
+      .help > .description > p {
+        margin: 5px 0;
+      }
+
+      #input_format, div.help div.description { margin-bottom: 10px; }
+
+      table {
+        font-size: 0.8em;
+        background-color: #eee;
+        border-spacing: 0;
+      }
+      table thead tr th {
+        background-color: #ccc;
+        text-align: left;
+      }
+      table thead tr th:first-child { border-radius: 10px 0 0 0; }
+      table thead tr th:last-child { border-radius: 0 10px 0 0; }
+      table th, table td {
+        border-bottom: 1px solid #888;
+        padding: 5px 9px;
+      }
+      table td.name { min-width: 150px; }
+      table td.description, table td.example { color: #222; }
+
+      .clearfix:before, .clearfix:after {
+        content: "";
+        display: table;
+      }
+      .clearfix:after { clear: both; }
+      .clearfix { *zoom: 1; }
+
+      .nowrap { white-space: nowrap; }
+    </style>
+  </head>
+  <body onload="load_options()">
+    <div id="save_notification" style="display: none;">Saved...</div>
+    <div id="options">
+      <div class="setting">
+        <label for="input_format" style="font-size: 1.1em;"><strong>Commit message format:</strong></label>
+        <input type="text" value="Loading..." class="loading" id="input_format" name="format" />
+        <div class="help">
+          <div class="description" id="format_specifier_description">
+            <p>The format above is used to render the commit message displayed in the prompt after searching for a bug.</p>
+            <p>There are a bunch of variables which expand in the format. To place a variable named <em class="nowrap"><strong>title</strong></em> in the format, use <em class="nowrap">%(<strong>title</strong>)s</em>, much like <a href="http://docs.python.org/library/stdtypes.html#string-formatting">Python's dict string formatting specifiers</a>.</p>
+            <p style="font-size: 0.7em;">(This is because the string formatting function was written by a <a href="http://benjamin.smedbergs.us/blog/2008-07-15/string-formatting-in-javascript/">Python enthusiast</a>, and I'm one, too)</p>
+          </div>
+          <table id="format_specifiers">
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>Description</th>
+                <th>Example Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="variable">
+                <td class="name">%(id)s</td>
+                <td class="description">The ID of the story</td>
+                <td class="example">29784057</td>
+              </tr>
+              <tr class="variable">
+                <td class="name">%(title)s</td>
+                <td class="description">The title of the story</td>
+                <td class="example">Profile edit page should allow editing of name</td>
+              </tr>
+              <tr class="variable">
+                <td class="name">%(titlefull)s</td>
+                <td class="description">The title of the story, including the owner's initials, if there is an owner.</td>
+                <td class="example">Profile edit page should allow editing of name (ZK)</td>
+              </tr>
+              <tr class="variable">
+                <td class="name">%(owner)s</td>
+                <td class="description">The full name of the story owner, if there is one.</td>
+                <td class="example">Zach Kanzler</td>
+              </tr>
+              <tr class="variable">
+                <td class="name">%(initials)s</td>
+                <td class="description">The initials of the story owner, if there is one.</td>
+                <td class="example">ZK</td>
+              </tr>
+              <tr class="variable">
+                <td class="name">%(labels)s</td>
+                <td class="description">All the labels applied to the story, separated by spaces only.</td>
+                <td class="example">mylabel altbranch testing</td>
+              </tr>
+              <tr class="variable">
+                <td class="name">%(labels_comma)s</td>
+                <td class="description">All the labels applied to the story, separated by commas only.</td>
+                <td class="example">mylabel,altbranch,testing</td>
+              </tr>
+              <tr class="variable">
+                <td class="name">%(labels_comma_space)s</td>
+                <td class="description">All the labels applied to the story, separated by commas and spaces.</td>
+                <td class="example">mylabel, altbranch, testing</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

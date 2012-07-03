@@ -1,49 +1,121 @@
-//In the background page:
 <html>
 
-	<script type="text/javascript" charset="utf-8" src="jquery.js"></script>
+  <script type="text/javascript" charset="utf-8" src="jquery.js"></script>
 
-	<script>
-	var pivotalTab = -1;
-	
-	chrome.extension.onRequest.addListener(function(request, sender, sendResponse)
-	{
-    	if (request.action == "pageStart") {
-    		pivotalTab = sender.tab;
-        	chrome.pageAction.show(pivotalTab.id);
-    	}
-	});
-	
-	// when a fragmented call happens the page actions disappear...
-	// reshow the action
-	chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) 
-	{
-		if (pivotalTab.id == tabId) {
-        	chrome.pageAction.show(pivotalTab.id);
-		}
-	});
+  <script>
+    var pivotalTab = -1;
+    
+    // http://benjamin.smedbergs.us/blog/2008-07-15/string-formatting-in-javascript/
+    // String.format written by Benjamin Smedbergs
+    String.prototype.format = function string_format(d) {
+      // there are two modes of operation... unnamed indices are read in order;
+      // named indices using %(name)s. The two styles cannot be mixed.
+      // Unnamed indices can be passed as either a single argument to this function,
+      // multiple arguments to this function, or as a single array argument
+      var curindex = 0;
 
-	chrome.pageAction.onClicked.addListener(onClicked);
+      if (arguments.length > 1)
+        d = arguments;
 
-	function onClicked(tab)
-	{
-    	var query = prompt("Search");
-    	if (!query) return;
-    	
-    	searchStory(query);
-	}
-	
-	function searchStory(query) {
-		chrome.tabs.sendRequest(pivotalTab.id, {query: query}, function(stories) {
-			if (stories && stories.length) {
-				prompt(stories.length > 1 ? "!! " + stories.length + " matches" : "Match", "[Fixes #" + stories[0].id + "] " + stories[0].name.replace(/<\/?[^>]+(>|$)/g, ""));
-			} else {
-				alert("not found");
-			}
-		});
-	}
-	
-	</script>
-  
-  
+      function r(s, key, type) {
+        var v;
+        if (key == "") {
+          if (curindex == -1)
+            throw Error("Cannot mix named and positional indices in string formatting.");
+
+          if (curindex == 0 && (!(d instanceof Object) || !(0 in d)))
+            v = d;
+          else if (!(curindex in d))
+            throw Error("Insufficient number of items in format, requesting item %i".format(curindex));
+          else
+            v = d[curindex];
+
+          ++curindex;
+        }
+        else {
+          key = key.slice(1, -1);
+          if (curindex > 0)
+            throw Error("Cannot mix named and positional indices in string formatting.");
+          curindex = -1;
+
+          if (!(key in d))
+            throw Error("Key '%s' not present during string substitution.".format(key));
+          v = d[key];
+        }
+        switch (type) {
+        case "s":
+          return v.toString();
+        case "r":
+          return v.toSource();
+        case "i":
+          return parseInt(v);
+        case "f":
+          return Number(v);
+        case "%":
+          return "%";
+        default:
+          throw Error("Unexpected format character '%s'.".format(type));
+        }
+      }
+      return this.replace(/%(\([^)]+\))?(.)/g, r);
+    };
+    
+    chrome.extension.onRequest.addListener(function(request, sender, sendResponse)
+    {
+        if (request.action == "pageStart") {
+          pivotalTab = sender.tab;
+            chrome.pageAction.show(pivotalTab.id);
+        }
+    });
+    
+    // when a fragmented call happens the page actions disappear...
+    // reshow the action
+    chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) 
+    {
+      if (pivotalTab.id == tabId) {
+            chrome.pageAction.show(pivotalTab.id);
+      }
+    });
+
+    chrome.pageAction.onClicked.addListener(onClicked);
+
+    function onClicked(tab)
+    {
+        var query = prompt("Search");
+        if (!query) return;
+        
+        searchStory(query);
+    }
+    
+    function getStoryContext(story)
+    {
+      return {
+        id: story.id,
+        
+        title: story.title,
+        titlefull: story.titlefull,
+        
+        owner: story.owner,
+        initials: story.initials,
+        
+        labels: story.labels.join(' '),
+        labels_comma: story.labels.join(','),
+        labels_comma_space: story.labels.join(', ')
+      };
+    }
+    
+    function searchStory(query) {
+      chrome.tabs.sendRequest(pivotalTab.id, {query: query}, function(stories) {
+        if (stories && stories.length) {
+          var context = getStoryContext(stories[0]);
+          var format = localStorage.format;
+          var commit_msg = format.format(context);
+          
+          prompt(stories.length > 1 ? "!! " + stories.length + " matches" : "Match", commit_msg);
+        } else {
+          alert("not found");
+        }
+      });
+    }
+  </script>
 </html>
