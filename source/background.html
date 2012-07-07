@@ -1,6 +1,7 @@
 <html>
 
   <script type="text/javascript" charset="utf-8" src="jquery.js"></script>
+  <script type="text/javascript" charset="utf-8" src="mousetrap.min.js"></script>
 
   <script>
     var pivotalTab = -1;
@@ -62,10 +63,23 @@
     
     chrome.extension.onRequest.addListener(function(request, sender, sendResponse)
     {
-        if (request.action == "pageStart") {
-          pivotalTab = sender.tab;
-            chrome.pageAction.show(pivotalTab.id);
-        }
+      if (request.action == 'pageStart')
+      {
+        pivotalTab = sender.tab;
+        chrome.pageAction.show(pivotalTab.id);
+      }
+      
+      else if (request.action == 'startSearch')
+        startSearch();
+      
+      else if (request.action == 'keyboardShortcut')
+        sendResponse({ shortcut: localStorage.shortcut });
+      
+      else if (request.action == 'setShortcut')
+          chrome.tabs.sendRequest(pivotalTab.id, {
+              action: 'setShortcut',
+              shortcut: localStorage.shortcut
+          });
     });
     
     // when a fragmented call happens the page actions disappear...
@@ -79,12 +93,18 @@
 
     chrome.pageAction.onClicked.addListener(onClicked);
 
+    function startSearch()
+    {
+      var query = prompt("Search");
+      if (!query)
+        return;
+      
+      searchStory(query);
+    }
+    
     function onClicked(tab)
     {
-        var query = prompt("Search");
-        if (!query) return;
-        
-        searchStory(query);
+      startSearch();
     }
     
     function getStoryContext(story)
@@ -104,7 +124,8 @@
       };
     }
     
-    function searchStory(query) {
+    function searchStory(query)
+    {
       chrome.tabs.sendRequest(pivotalTab.id, {query: query}, function(stories) {
         if (stories && stories.length) {
           var context = getStoryContext(stories[0]);

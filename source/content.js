@@ -21,10 +21,20 @@ function vega_storyStatus(elem)
   return '';
 }
 
-chrome.extension.sendRequest({action:"pageStart"});
+chrome.extension.sendRequest({ action: "pageStart" });
 
 chrome.extension.onRequest.addListener(
   function(request, sender, sendResponse) {
+    if (request.action == 'setShortcut')
+    {
+        Mousetrap.reset();
+        Mousetrap.bind(request.shortcut, function (e) {
+            chrome.extension.sendRequest({ action: 'startSearch' });
+        });
+        
+        return;
+    }
+    
     var words = request.query.toLowerCase().split(" ");
 
     var results = new Array();
@@ -49,7 +59,7 @@ chrome.extension.onRequest.addListener(
           
           var owner = '';
           var owner_initials = '';
-          if (el_owner)
+          if (el_owner.length > 0)
           {
             owner = el_owner.attr('title');
             owner_initials = el_owner.text();
@@ -88,11 +98,20 @@ chrome.extension.onRequest.addListener(
 var pivothub_matches = function(title, words) 
 {
     var title_lower = title.toLowerCase();
-    var found = false;
+    var found = true;
     vega_$(words).each(function() {
-        if (title_lower.indexOf(this) != -1)
-          found = true;
+        if (title_lower.indexOf(this) == -1)
+        {
+            found = false;
+            return false;
+        }
     });
     
     return found;
 };
+
+chrome.extension.sendRequest({ action: 'keyboardShortcut' }, function (response) {
+    Mousetrap.bind(response.shortcut, function (e) {
+        chrome.extension.sendRequest({ action: 'startSearch' });
+    });
+});

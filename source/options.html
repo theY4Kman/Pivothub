@@ -28,6 +28,14 @@
         padding: 15px;
         width: 760px;
       }
+      
+      .setting { margin-bottom: 10px; }
+      .setting:last-child { margin-bottom: 0; }
+      
+      label {
+        font-size: 1.1em;
+        font-weight: bold;
+      }
 
       #input_format {
         border: 1px solid #ccc;
@@ -82,7 +90,11 @@
     <div id="save_notification" style="display: none;">Saved...</div>
     <div id="options">
       <div class="setting">
-        <label for="input_format" style="font-size: 1.1em;"><strong>Commit message format:</strong></label>
+        <label for="input_shortcut">Keyboard shortcut:</label>
+        <input type="text" value="Loading..." class="loading" id="input_shortcut" name="shortcut" />
+      </div>
+      <div class="setting">
+        <label for="input_format">Commit message format:</label>
         <input type="text" value="Loading..." class="loading" id="input_format" name="format" />
         <div class="help">
           <div class="description" id="format_specifier_description">
